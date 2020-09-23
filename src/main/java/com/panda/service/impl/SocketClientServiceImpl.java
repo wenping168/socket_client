@@ -6,6 +6,7 @@ import com.panda.model.ClientSocket;
 import com.panda.service.SocketClientService;
 import com.panda.utils.socket.client.SocketClient;
 import com.panda.utils.socket.constants.SocketConstant;
+import com.panda.utils.socket.dto.ClientGetParkIdVo;
 import com.panda.utils.socket.dto.ClientSendDto;
 import com.panda.utils.socket.dto.ServerSendDto;
 import com.panda.utils.socket.enums.FunctionCodeEnum;
@@ -13,9 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import org.springframework.util.DigestUtils;
+
+
 import javax.annotation.Resource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.*;
 
@@ -31,6 +36,8 @@ public class SocketClientServiceImpl implements SocketClientService {
 	 * 全局缓存，用于存储已存在的socket客户端连接
 	 */
 	public static ConcurrentMap<String, ClientSocket> existSocketClientMap = new ConcurrentHashMap<>();
+
+	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss") ;
 
 
 	@Resource(name = "clientTaskPool")
@@ -56,20 +63,19 @@ public class SocketClientServiceImpl implements SocketClientService {
 			}
 			client.setLastOnTime(new Date());
 
-			ScheduledExecutorService clientHeartExecutor = Executors
-					.newSingleThreadScheduledExecutor(r -> new Thread(r, "socket_client_heart_" + r.hashCode()));
+			ScheduledExecutorService clientHeartExecutor = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "socket_client_heart_" + r.hashCode()));
 			ClientSocket clientSocket = new ClientSocket(client,clientHeartExecutor);
 			//登陆
-			ClientSendDto dto = new ClientSendDto();
+			/*ClientSendDto dto = new ClientSendDto();
 			dto.setFunctionCode(FunctionCodeEnum.LOGIN.getValue());
-			dto.setParkId(parkId);
-			client.println(JSONObject.toJSONString(dto));
+			dto.setParkId(parkId);*/
+			client.println(parkId +"\r\n");
 			messageExecutor.submit(() -> {
 				try {
 					String message;
 					while ((message = client.readLine()) != null) {
 						log.info("客户端:{}，获得消息：{}", parkId, message);
-						ServerSendDto serverSendDto;
+						/*ServerSendDto serverSendDto;
 						try {
 							serverSendDto = JSONObject.parseObject(message, ServerSendDto.class);
 						} catch (Exception e) {
@@ -79,10 +85,27 @@ public class SocketClientServiceImpl implements SocketClientService {
 							client.println(JSONObject.toJSONString(sendDto));
 							break;
 						}
-						Integer functionCode = serverSendDto.getFunctionCode();
-						if (functionCode.equals(FunctionCodeEnum.HEART.getValue())) {
+						Integer functionCode = serverSendDto.getFunctionCode();*/
+						if (message.contains("服务端心跳包")) {
 							//心跳类型
 							client.setLastOnTime(new Date());
+						}else if (message.contains("GETPARKID 15")){
+							/*ClientGetParkIdVo sendDto = new ClientGetParkIdVo();
+							sendDto.setFunctionCode(FunctionCodeEnum.MESSAGE.getValue());
+							sendDto.setParkId("Parking-Dongyang1");
+							sendDto.setTime(simpleDateFormat.format(new Date()));
+							String str = sendDto.getParkId()+sendDto.getTime() ;
+							sendDto.setSignature(DigestUtils.md5DigestAsHex(str.getBytes()));*/
+							String parkId2 = parkId ;
+							String time = simpleDateFormat.format(new Date());
+							String signature = DigestUtils.md5DigestAsHex((parkId2 + time).getBytes());
+							//GETPARKID{"parkId":"1","time":"2015-11-24 10:33:58","signature":"112233afadf"}\r\n
+							String res = "GETPARKID{\"parkId\":" + "\"" + parkId2 + "\",\"time\":\""  + time + "\"," + "\"signature\":" + "\"" + signature +"\"}"+"\r\n" ;
+							log.info("-------"+res+"-------");
+							client.println(res);
+						}else if (message.startsWith("GET_CAR_POSITION")){
+							String res = "GET_CAR_POSITION{\"status\":\"success\",\"plate\":\"123\",\"position\":[{\"parkName\":\"停车场名称\",\"parkSpace\":\"车位名称\",\"plateId\":\"A1234\"},{\"parkName\":\"停车场名称\",\"parkSpace\":\"车位名称\",\"plateId\":\"A1235\"},{\"parkName\":\"停车场名称\",\"parkSpace\":\"车位名称\",\"plateId\":\"A1236\"}]}" ;
+							client.println(res+"\r\n");
 						}
 					}
 				} catch (Exception e) {
@@ -100,9 +123,11 @@ public class SocketClientServiceImpl implements SocketClientService {
 						log.error("心跳超时");
 						throw new Exception("服务端已断开socket");
 					}
-					ClientSendDto heartDto = new ClientSendDto();
+					/*ClientSendDto heartDto = new ClientSendDto();
 					heartDto.setFunctionCode(FunctionCodeEnum.HEART.getValue());
-					client.println(JSONObject.toJSONString(heartDto));
+					heartDto.setMessage("客户端💗💗💗");
+					client.println(JSONObject.toJSONString(heartDto));*/
+					client.println("USERSTATE"+"\r\n");
 				} catch (Exception e) {
 					log.error("客户端异常,parkId:{},exception：{}", parkId, e.getMessage());
 					client.close();
@@ -113,6 +138,16 @@ public class SocketClientServiceImpl implements SocketClientService {
 			}, 0, 5, TimeUnit.SECONDS);
 			existSocketClientMap.put(parkId, clientSocket);
 		});
+	}
+
+	private String getMd5Password(
+			String password, String salt) {
+		// 加密规则：使用“盐+密码+盐”作为原始数据，执行5次加密
+		String result = salt + password + salt;
+		for (int i = 0; i < 5; i++) {
+			result = DigestUtils.md5DigestAsHex(result.getBytes()).toUpperCase();
+		}
+		return result;
 	}
 
 	@Override

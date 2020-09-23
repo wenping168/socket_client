@@ -28,4 +28,5 @@ public class ClientSendDto implements Serializable {
 	 */
 	private String message;
 
+
 }

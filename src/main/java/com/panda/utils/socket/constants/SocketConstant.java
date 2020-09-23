@@ -9,12 +9,12 @@ public class SocketConstant {
 	/**
 	 * 心跳频率为10s
 	 */
-	public static final int HEART_RATE = 20*1000;
+	public static final int HEART_RATE = 20000*1000;
 
 	/**
 	 * 允许一个连接身份验证延迟10s，10s后还没有完成身份验证则自动关闭该客户端链接的socket
 	 */
-	public static final int LOGIN_DELAY = 15*1000;
+	public static final int LOGIN_DELAY = 15000*1000;
 
 	/**
 	 * 最多开2000个socket线程，超过的直接拒绝
