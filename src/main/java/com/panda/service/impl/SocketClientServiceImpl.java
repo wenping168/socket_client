@@ -51,8 +51,8 @@ public class SocketClientServiceImpl implements SocketClientService {
 			//新建一个socket连接
 			SocketClient client;
 			try {
-				client = new SocketClient(InetAddress.getByName("127.0.0.1"), 60000);
-//				client = new SocketClient(InetAddress.getByName("47.101.134.243"), 60000);
+//				client = new SocketClient(InetAddress.getByName("127.0.0.1"), 60000);
+				client = new SocketClient(InetAddress.getByName("47.101.134.243"), 60000);
 			} catch (UnknownHostException e) {
 				throw new ServiceException("socket新建失败");
 			}

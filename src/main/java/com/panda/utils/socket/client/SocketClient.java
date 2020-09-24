@@ -37,7 +37,7 @@ public class SocketClient {
 	public void println(String message) {
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+			writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),"UTF-8"), true);
 			writer.println(message);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
