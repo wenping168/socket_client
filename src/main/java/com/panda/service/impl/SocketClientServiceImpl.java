@@ -1,15 +1,10 @@
 package com.panda.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.panda.core.ServiceException;
 import com.panda.model.ClientSocket;
 import com.panda.service.SocketClientService;
 import com.panda.utils.socket.client.SocketClient;
 import com.panda.utils.socket.constants.SocketConstant;
-import com.panda.utils.socket.dto.ClientGetParkIdVo;
-import com.panda.utils.socket.dto.ClientSendDto;
-import com.panda.utils.socket.dto.ServerSendDto;
-import com.panda.utils.socket.enums.FunctionCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -57,7 +52,7 @@ public class SocketClientServiceImpl implements SocketClientService {
 			SocketClient client;
 			try {
 				client = new SocketClient(InetAddress.getByName("127.0.0.1"), 60000);
-				//client = new SocketClient(InetAddress.getByName("47.101.134.243"), 60000);
+//				client = new SocketClient(InetAddress.getByName("47.101.134.243"), 60000);
 			} catch (UnknownHostException e) {
 				throw new ServiceException("socket新建失败");
 			}
@@ -86,7 +81,7 @@ public class SocketClientServiceImpl implements SocketClientService {
 							break;
 						}
 						Integer functionCode = serverSendDto.getFunctionCode();*/
-						if (message.contains("服务端心跳包")) {
+						if (message.contains("socket_server heart response")) {
 							//心跳类型
 							client.setLastOnTime(new Date());
 						}else if (message.contains("GETPARKID 15")){
@@ -104,7 +99,9 @@ public class SocketClientServiceImpl implements SocketClientService {
 							log.info("-------"+res+"-------");
 							client.println(res);
 						}else if (message.startsWith("GET_CAR_POSITION")){
-							String res = "GET_CAR_POSITION{\"status\":\"success\",\"plate\":\"123\",\"position\":[{\"parkName\":\"停车场名称\",\"parkSpace\":\"车位名称\",\"plateId\":\"A1234\"},{\"parkName\":\"停车场名称\",\"parkSpace\":\"车位名称\",\"plateId\":\"A1235\"},{\"parkName\":\"停车场名称\",\"parkSpace\":\"车位名称\",\"plateId\":\"A1236\"}]}" ;
+							String res = "GET_CAR_POSITION{\"status\":\"success\",\"plate\":\"123\",\"position\":[{\"parkName\":\"停车场名称\",\"parkSpace\":\"B039\",\"plateId\":\"浙A799VL\"},{\"parkName\":\"停车场名称\",\"parkSpace\":\"车位名称\",\"plateId\":\"A1235\"},{\"parkName\":\"停车场名称\",\"parkSpace\":\"车位名称\",\"plateId\":\"A1236\"}]}" ;
+							//String res = "GET_CAR_POSITION{\"status\":\"fail\",\"plate\":\"123\",\"position\":[]}" ;
+							//String res = "GET_CAR_POSITION{\"status\":\"success\",\"plate\":\"123\",\"position\":[]}" ;
 							client.println(res+"\r\n");
 						}
 					}
@@ -134,7 +131,6 @@ public class SocketClientServiceImpl implements SocketClientService {
 					existSocketClientMap.remove(parkId);
 					clientHeartExecutor.shutdown();
 				}
-
 			}, 0, 5, TimeUnit.SECONDS);
 			existSocketClientMap.put(parkId, clientSocket);
 		});
