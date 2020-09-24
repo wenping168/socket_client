@@ -3,7 +3,7 @@ package com.panda.utils.socket.enums;
 /**
  * 功能码 0 心跳 1 登陆 2 登出 3 发送消息
  *
- * @author 丁许
+ * @author camel
  * @date 2019-01-24 15:53
  */
 public enum FunctionCodeEnum {

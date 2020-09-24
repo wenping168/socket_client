@@ -1,7 +1,7 @@
 package com.panda.utils.socket.handler;
 
 /**
- * @author 丁许
+ * @author camel
  * @date 2019-01-23 22:28
  */
 public interface LoginHandler {

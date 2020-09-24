@@ -14,7 +14,7 @@ import java.net.UnknownHostException;
 import java.util.Date;
 
 /**
- * @author 丁许
+ * @author camel
  */
 @Slf4j
 @Data
@@ -52,7 +52,7 @@ public class SocketClient {
 	 */
 	public String readLine() throws Exception {
 		BufferedReader reader;
-		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		reader = new BufferedReader(new InputStreamReader(socket.getInputStream(),"UTF-8"));
 		return reader.readLine();
 	}
 

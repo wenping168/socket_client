@@ -1,7 +1,7 @@
 package com.panda.service;
 
 /**
- * @author 丁许
+ * @author camel
  * @date 2019-01-25 9:49
  */
 public interface SocketClientService {

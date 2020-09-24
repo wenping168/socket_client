@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.concurrent.*;
 
 /**
- * @author 丁许
+ * @author camel
  * @date 2019-01-25 9:50
  */
 @Service
@@ -67,6 +67,9 @@ public class SocketClientServiceImpl implements SocketClientService {
 			client.println(parkId +"\r\n");
 			messageExecutor.submit(() -> {
 				try {
+
+
+
 					String message;
 					while ((message = client.readLine()) != null) {
 						log.info("客户端:{}，获得消息：{}", parkId, message);
